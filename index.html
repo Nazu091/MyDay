@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>MyDay – Quản lý công việc cá nhân</title>
+
+  <!-- Cấu hình PWA & Tương thích iOS Safari -->
+  <meta name="description" content="Ứng dụng quản lý công việc, lịch, thói quen và ghi chú cá nhân hoạt động Offline." />
+  <meta name="theme-color" content="#F9FAFB" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MyDay" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- ==================== SIDEBAR (Desktop / Tablet) ==================== -->
+    <aside class="sidebar" aria-label="Điều hướng chính">
+      <div>
+        <div class="sidebar__brand">
+          <h1>MyDay</h1>
+          <p>Năng suất cá nhân Offline</p>
+        </div>
+
+        <div class="sidebar__cta">
+          <button type="button" class="btn btn--primary btn--full" data-action="global-quick-add">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Thêm công việc</span>
+          </button>
+        </div>
+
+        <nav class="sidebar__nav">
+          <button type="button" class="nav-item nav-item--active" data-tab-target="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg>
+            <span>Trang chủ</span>
+          </button>
+          <button type="button" class="nav-item" data-tab-target="tasks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+            <span>Công việc</span>
+          </button>
+          <button type="button" class="nav-item" data-tab-target="calendar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Lịch</span>
+          </button>
+          <button type="button" class="nav-item" data-tab-target="habits">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c.6 3.5-2 5.5-2 8.5a4 4 0 0 0 8 0c0-3-2-5.5-4-8.5z"/><path d="M6 15a6 6 0 0 0 12 0"/></svg>
+            <span>Thói quen</span>
+          </button>
+          <button type="button" class="nav-item" data-tab-target="profile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
+            <span>Cá nhân</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="sidebar__footer">
+        <span class="section-head__meta">v1.0.1</span>
+        <span class="net-pill net-pill--online" data-network-indicator>
+          <span class="net-pill__dot"></span>
+          <span class="net-pill__text">Online</span>
+        </span>
+      </div>
+    </aside>
+
+    <!-- ==================== MOBILE TOP HEADER ==================== -->
+    <header class="mobile-header">
+      <span id="mobile-header-title" class="mobile-header__title">MyDay</span>
+      <span class="net-pill net-pill--online" data-network-indicator>
+        <span class="net-pill__dot"></span>
+        <span class="net-pill__text">Online</span>
+      </span>
+    </header>
+
+    <!-- ==================== MAIN VIEWS ==================== -->
+    <main class="main-content">
+      <!-- Thanh báo Offline -->
+      <div id="offline-banner" class="status-banner status-banner--offline" hidden role="status">
+        <span>Đang hoạt động ngoại tuyến (Offline). Mọi thay đổi vẫn được lưu an toàn trên thiết bị.</span>
+      </div>
+
+      <!-- Thanh báo có bản cập nhật PWA mới -->
+      <div id="update-banner" class="status-banner status-banner--update" hidden role="status">
+        <span>Đã có phiên bản MyDay mới sẵn sàng (dữ liệu cá nhân được giữ nguyên).</span>
+        <div class="status-banner__actions">
+          <button id="btn-apply-update" type="button" class="btn btn--primary btn--sm">Cập nhật ngay</button>
+          <button id="btn-dismiss-update" type="button" class="btn btn--sm">Để sau</button>
+        </div>
+      </div>
+
+      <!-- ==================== 1. TAB TRANG CHỦ (DASHBOARD) ==================== -->
+      <section id="view-home" class="app-view app-view--active" aria-label="Tổng quan hôm nay">
+        <div class="stack-lg">
+          <div class="hero-card">
+            <div>
+              <p id="dash-date" class="hero-card__date">Đang tải ngày...</p>
+              <h2 id="dash-greeting" class="hero-card__greeting">Xin chào</h2>
+              <p id="dash-subtitle" class="hero-card__subtitle">Đang đồng bộ công việc từ thiết bị...</p>
+            </div>
+            <button type="button" class="btn btn--primary btn--sm" data-action="open-quick-add">
+              + Thêm nhanh
+            </button>
+          </div>
+
+          <div class="card progress-card" aria-label="Tiến độ hoàn thành trong ngày">
+            <div class="ring-wrap">
+              <svg class="ring-svg" viewBox="0 0 92 92" aria-hidden="true">
+                <circle class="ring-track" cx="46" cy="46" r="38" />
+                <circle id="dash-progress-ring" class="ring-value" cx="46" cy="46" r="38" />
+              </svg>
+              <div class="ring-label">
+                <strong id="stat-today-percent">0%</strong>
+                <span>Hoàn thành</span>
+              </div>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-box">
+                <span id="stat-today-total" class="stat-box__num">0</span>
+                <span class="stat-box__label">Hôm nay</span>
+              </div>
+              <div class="stat-box">
+                <span id="stat-today-completed" class="stat-box__num">0</span>
+                <span class="stat-box__label">Đã xong</span>
+              </div>
+              <div class="stat-box">
+                <span id="stat-today-remaining" class="stat-box__num">0</span>
+                <span class="stat-box__label">Còn lại</span>
+              </div>
+            </div>
+          </div>
+
+          <section aria-labelledby="heading-important">
+            <div class="section-head">
+              <h3 id="heading-important" class="section-head__title">Hoạt động quan trọng hôm nay</h3>
+              <span class="section-head__meta">Ưu tiên cao</span>
+            </div>
+            <div id="dash-important-list" class="task-list"></div>
+          </section>
+
+          <section aria-labelledby="heading-upcoming">
+            <div class="section-head">
+              <h3 id="heading-upcoming" class="section-head__title">Công việc sắp tới</h3>
+              <div class="header-actions">
+                <span id="dash-upcoming-count" class="section-head__meta">0 việc</span>
+                <button type="button" class="link-btn" data-navigate="tasks">Xem tất cả</button>
+              </div>
+            </div>
+            <div id="dash-upcoming-list" class="task-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ==================== 2. TAB CÔNG VIỆC ==================== -->
+      <section id="view-tasks" class="app-view" hidden aria-label="Quản lý công việc">
+        <div class="stack-lg">
+          <div class="section-head" style="margin-bottom:0;">
+            <div>
+              <h2 class="hero-card__greeting" style="font-size:1.4rem;">Công việc</h2>
+              <p id="tasks-total-badge" class="section-head__meta">0 công việc</p>
+            </div>
+            <div class="header-actions">
+              <button id="btn-open-categories" type="button" class="btn btn--sm">Danh mục</button>
+              <button type="button" class="btn btn--primary btn--sm" data-action="global-quick-add">
+                + Thêm mới
+              </button>
+            </div>
+          </div>
+
+          <div class="task-toolbar">
+            <div class="search-box">
+              <span class="search-box__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </span>
+              <input id="tasks-search-input" class="search-box__input" type="search" placeholder="Tìm theo tên hoặc mô tả công việc..." autocomplete="off" />
+              <button id="tasks-search-clear" type="button" class="search-box__clear" hidden aria-label="Xóa từ khóa">✕</button>
+            </div>
+
+            <div id="tasks-status-pills" class="filter-pills" role="group" aria-label="Lọc theo trạng thái"></div>
+
+            <div class="filter-selects">
+              <select id="tasks-filter-priority" class="select select--compact" aria-label="Lọc theo mức độ ưu tiên">
+                <option value="all">Mọi ưu tiên</option>
+                <option value="high">Ưu tiên Cao</option>
+                <option value="medium">Ưu tiên Trung bình</option>
+                <option value="low">Ưu tiên Thấp</option>
+              </select>
+
+              <select id="tasks-filter-category" class="select select--compact" aria-label="Lọc theo danh mục">
+                <option value="all">Tất cả danh mục</option>
+              </select>
+
+              <select id="tasks-sort-select" class="select select--compact" aria-label="Sắp xếp công việc">
+                <option value="due_asc">Sắp xếp: Hạn gần nhất</option>
+                <option value="priority_desc">Sắp xếp: Ưu tiên cao nhất</option>
+                <option value="start_asc">Sắp xếp: Ngày bắt đầu</option>
+                <option value="newest">Sắp xếp: Mới tạo nhất</option>
+              </select>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end;">
+              <button id="btn-reset-task-filters" type="button" class="link-btn" hidden>Đặt lại bộ lọc</button>
+            </div>
+          </div>
+
+          <div id="tasks-list-container" class="task-list"></div>
+        </div>
+      </section>
+
+      <!-- ==================== 3. TAB LỊCH (STAGE 5) ==================== -->
+      <section id="view-calendar" class="app-view" hidden aria-label="Lịch công việc">
+        <div class="stack-lg">
+          <div class="section-head" style="margin-bottom:0;">
+            <h2 class="hero-card__greeting" style="font-size:1.4rem;">Lịch</h2>
+            <button id="btn-cal-add-task" type="button" class="btn btn--primary btn--sm">+ Thêm cho ngày này</button>
+          </div>
+
+          <div id="calendar-mode-switch" class="segmented" role="group" aria-label="Chế độ xem lịch">
+            <button type="button" class="seg-btn" data-cal-mode="day">Ngày</button>
+            <button type="button" class="seg-btn" data-cal-mode="week">Tuần</button>
+            <button type="button" class="seg-btn seg-btn--active" data-cal-mode="month">Tháng</button>
+          </div>
+
+          <div class="card stack-sm" style="gap:14px;">
+            <div class="cal-toolbar">
+              <div class="cal-nav-group">
+                <button id="btn-cal-prev" type="button" class="btn btn--sm" aria-label="Khoảng trước">‹</button>
+                <button id="btn-cal-today" type="button" class="btn btn--sm">Hôm nay</button>
+                <button id="btn-cal-next" type="button" class="btn btn--sm" aria-label="Khoảng sau">›</button>
+              </div>
+              <input id="cal-jump-date" type="date" class="input cal-jump-input" aria-label="Chuyển nhanh tới ngày" />
+            </div>
+
+            <h3 id="cal-period-title" class="cal-period-title">Tháng hiện tại</h3>
+            <div id="calendar-grid-surface"></div>
+          </div>
+
+          <section aria-labelledby="cal-selected-heading">
+            <div class="section-head">
+              <h3 id="cal-selected-heading" class="section-head__title">Công việc trong ngày</h3>
+              <span id="cal-selected-count" class="section-head__meta">0 công việc</span>
+            </div>
+            <div id="cal-day-tasks" class="task-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ==================== 4. TAB THÓI QUEN (STAGE 5) ==================== -->
+      <section id="view-habits" class="app-view" hidden aria-label="Quản lý thói quen">
+        <div class="stack-lg">
+          <div class="section-head" style="margin-bottom:0;">
+            <div>
+              <h2 class="hero-card__greeting" style="font-size:1.4rem;">Thói quen</h2>
+              <p id="habits-today-summary" class="section-head__meta">Đang tải...</p>
+            </div>
+            <button id="btn-add-habit" type="button" class="btn btn--primary btn--sm">+ Thêm thói quen</button>
+          </div>
+
+          <div class="progress-track" aria-label="Tiến độ thói quen hôm nay">
+            <div id="habits-today-bar" class="progress-fill bar-fill--success" style="width:0%"></div>
+          </div>
+
+          <div id="habits-list-container" class="stack-sm" style="gap:12px;"></div>
+        </div>
+      </section>
+
+      <!-- ==================== 5. TAB CÁ NHÂN (NOTES, STATS, SETTINGS) ==================== -->
+      <section id="view-profile" class="app-view" hidden aria-label="Cá nhân">
+        <div class="stack-lg">
+          <h2 class="hero-card__greeting" style="font-size:1.4rem;">Cá nhân</h2>
+
+          <div class="segmented" role="tablist" aria-label="Phân hệ cá nhân">
+            <button type="button" role="tab" class="seg-btn seg-btn--active" data-profile-tab="notes" aria-selected="true">Ghi chú</button>
+            <button type="button" role="tab" class="seg-btn" data-profile-tab="statistics" aria-selected="false">Thống kê</button>
+            <button type="button" role="tab" class="seg-btn" data-profile-tab="settings" aria-selected="false">Cài đặt</button>
+          </div>
+
+          <!-- 5.1 GHI CHÚ (STAGE 6) -->
+          <div id="profile-notes" class="profile-panel">
+            <div class="stack-lg">
+              <div class="section-head" style="margin-bottom:0;">
+                <span id="notes-count-badge" class="section-head__meta">0 ghi chú</span>
+                <button id="btn-add-note" type="button" class="btn btn--primary btn--sm">+ Tạo ghi chú</button>
+              </div>
+
+              <div class="search-box">
+                <span class="search-box__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input id="notes-search-input" class="search-box__input" type="search" placeholder="Tìm kiếm trong ghi chú..." autocomplete="off" />
+                <button id="notes-search-clear" type="button" class="search-box__clear" hidden aria-label="Xóa từ khóa">✕</button>
+              </div>
+
+              <div id="notes-list-container"></div>
+            </div>
+          </div>
+
+          <!-- 5.2 THỐNG KÊ (STAGE 6) -->
+          <div id="profile-statistics" class="profile-panel" hidden>
+            <div class="stack-lg">
+              <div id="stats-period-switch" class="segmented" role="group" aria-label="Khung thời gian thống kê">
+                <button type="button" class="seg-btn" data-stats-period="day">Theo ngày</button>
+                <button type="button" class="seg-btn seg-btn--active" data-stats-period="week">Theo tuần</button>
+                <button type="button" class="seg-btn" data-stats-period="month">Theo tháng</button>
+              </div>
+
+              <div class="card stack-sm" style="gap:14px;">
+                <div class="stats-grid">
+                  <div class="stat-box">
+                    <span id="stat-all-total" class="stat-box__num">0</span>
+                    <span class="stat-box__label">Tổng việc</span>
+                  </div>
+                  <div class="stat-box">
+                    <span id="stat-all-done" class="stat-box__num">0</span>
+                    <span class="stat-box__label">Hoàn thành</span>
+                  </div>
+                  <div class="stat-box">
+                    <span id="stat-all-rate" class="stat-box__num">0%</span>
+                    <span class="stat-box__label">Tỷ lệ chung</span>
+                  </div>
+                </div>
+                <p id="stat-period-summary" class="section-head__meta" style="text-align:center;"></p>
+              </div>
+
+              <div class="card">
+                <h3 class="section-head__title">Biểu đồ hoạt động</h3>
+                <p id="stats-chart-caption" class="section-head__meta" style="margin:2px 0 12px;"></p>
+                <div id="stats-chart-container"></div>
+              </div>
+
+              <div class="card">
+                <h3 class="section-head__title" style="margin-bottom:12px;">Phân bổ trạng thái công việc</h3>
+                <div id="stats-status-breakdown" class="stack-sm"></div>
+              </div>
+
+              <div class="card">
+                <h3 class="section-head__title" style="margin-bottom:12px;">Thống kê thói quen</h3>
+                <div id="stats-habits-summary"></div>
+              </div>
+
+              <div class="card">
+                <h3 class="section-head__title" style="margin-bottom:8px;">Lịch sử công việc đã hoàn thành</h3>
+                <div id="stats-task-history" class="kv-list" style="margin-top:0;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5.3 CÀI ĐẶT (STAGE 7 & 8) -->
+          <div id="profile-settings" class="profile-panel" hidden>
+            <div class="stack-lg">
+              <!-- Giao diện -->
+              <div class="card">
+                <h3 class="section-head__title" style="margin-bottom:10px;">Giao diện hiển thị</h3>
+                <div id="theme-selector" class="segmented" role="group" aria-label="Chọn giao diện">
+                  <button type="button" class="seg-btn" data-theme-choice="light">Sáng</button>
+                  <button type="button" class="seg-btn" data-theme-choice="dark">Tối</button>
+                  <button type="button" class="seg-btn" data-theme-choice="system">Hệ thống</button>
+                </div>
+              </div>
+
+              <!-- Cấu hình nhắc nhở -->
+              <div class="card stack-sm" style="gap:12px;">
+                <h3 class="section-head__title">Cấu hình nhắc nhở</h3>
+                <label class="check-row" for="setting-reminder-enabled">
+                  <span>Bật nhắc nhở công việc hằng ngày</span>
+                  <input id="setting-reminder-enabled" type="checkbox" class="switch" />
+                </label>
+                <div class="check-row">
+                  <label for="setting-reminder-time">Giờ nhắc nhở</label>
+                  <input id="setting-reminder-time" type="time" class="input" style="width:auto;" value="08:00" />
+                </div>
+                <p id="reminder-permission-note" class="section-head__meta"></p>
+                <div>
+                  <button id="btn-test-reminder" type="button" class="btn btn--sm">Thử nhắc nhở ngay</button>
+                </div>
+              </div>
+
+              <!-- Sao lưu & Khôi phục JSON -->
+              <div class="card">
+                <h3 class="section-head__title">Sao lưu &amp; Khôi phục dữ liệu</h3>
+                <p class="section-head__meta" style="margin-top:4px;">
+                  Xuất toàn bộ công việc, thói quen, lịch sử, ghi chú và danh mục ra file JSON để lưu trữ hoặc chuyển sang thiết bị khác.
+                </p>
+
+                <div class="settings-actions-row">
+                  <button id="btn-export-json" type="button" class="btn btn--primary">Sao lưu JSON</button>
+                  <button id="btn-import-json" type="button" class="btn">Khôi phục JSON</button>
+                  <input id="input-import-json" type="file" accept="application/json,.json,text/plain" hidden />
+                </div>
+
+                <div class="security-note">
+                  <strong>Hướng dẫn bảo vệ file sao lưu:</strong> File sao lưu <code>.json</code> chứa dữ liệu văn bản thuần (chưa áp dụng mã hóa). Hãy lưu file trong thư mục cá nhân có bảo vệ mật khẩu/Face ID (như iCloud Drive riêng tư hoặc bộ nhớ nội bộ) và không chia sẻ lên nơi công khai.
+                </div>
+              </div>
+
+              <!-- Thông tin ứng dụng & PWA -->
+              <div class="card">
+                <div class="section-head" style="margin-bottom:6px;">
+                  <h3 class="section-head__title">Thông tin ứng dụng &amp; Dữ liệu</h3>
+                  <button id="btn-check-update" type="button" class="btn btn--sm">Kiểm tra cập nhật</button>
+                </div>
+                <div class="kv-list" style="margin-top:4px;">
+                  <div class="kv-row">
+                    <span>Phiên bản MyDay</span>
+                    <strong id="settings-app-version">v1.0.1</strong>
+                  </div>
+                  <div class="kv-row">
+                    <span>Chế độ chạy</span>
+                    <strong id="settings-pwa-mode">Đang kiểm tra...</strong>
+                  </div>
+                  <div class="kv-row">
+                    <span>Chế độ Offline (Service Worker)</span>
+                    <strong id="settings-sw-status">Đang kiểm tra...</strong>
+                  </div>
+                </div>
+                <p class="section-head__meta" style="margin-top:14px;">Số bản ghi lưu cục bộ trong IndexedDB:</p>
+                <div id="settings-db-summary" class="kv-list" style="margin-top:4px;"></div>
+              </div>
+
+              <!-- Xóa toàn bộ dữ liệu -->
+              <div class="card danger-card">
+                <h3 class="section-head__title" style="color:var(--status-danger);">Vùng nguy hiểm</h3>
+                <p class="section-head__meta" style="margin:4px 0 12px;">
+                  Xóa toàn bộ dữ liệu cá nhân lưu trên thiết bị này. Hành động yêu cầu xác nhận 2 bước và không thể hoàn tác.
+                </p>
+                <button id="btn-clear-all-data" type="button" class="btn btn--danger-outline btn--full">
+                  Xóa toàn bộ dữ liệu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================== MOBILE FLOATING ADD BUTTON ==================== -->
+    <button id="btn-fab-add" type="button" class="fab" data-action="global-quick-add" aria-label="Thêm công việc mới">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+    <!-- ==================== MOBILE BOTTOM TAB BAR (5 TABS) ==================== -->
+    <nav class="bottom-nav" aria-label="Điều hướng dưới">
+      <button type="button" class="nav-item nav-item--active" data-tab-target="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg>
+        <span>Trang chủ</span>
+      </button>
+      <button type="button" class="nav-item" data-tab-target="tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+        <span>Công việc</span>
+      </button>
+      <button type="button" class="nav-item" data-tab-target="calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Lịch</span>
+      </button>
+      <button type="button" class="nav-item" data-tab-target="habits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c.6 3.5-2 5.5-2 8.5a4 4 0 0 0 8 0c0-3-2-5.5-4-8.5z"/><path d="M6 15a6 6 0 0 0 12 0"/></svg>
+        <span>Thói quen</span>
+      </button>
+      <button type="button" class="nav-item" data-tab-target="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
+        <span>Cá nhân</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ==================== MODAL 1: THÊM / SỬA CÔNG VIỆC ==================== -->
+  <div id="modal-task" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-task-title" hidden>
+    <div class="modal__backdrop" data-close-modal="modal-task"></div>
+    <div class="modal__panel">
+      <div class="modal__header">
+        <h3 id="modal-task-title" class="modal__title">Thêm công việc mới</h3>
+        <button type="button" class="icon-btn" data-close-modal="modal-task" aria-label="Đóng">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="task-form" class="form-stack">
+        <div class="field">
+          <label for="task-title">Tên công việc *</label>
+          <input id="task-title" class="input" type="text" placeholder="Ví dụ: Hoàn thành báo cáo tuần" required maxlength="140" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label>Mức độ ưu tiên</label>
+          <input id="task-priority" type="hidden" value="medium" />
+          <div id="task-priority-group" class="segmented" role="group" aria-label="Chọn mức độ ưu tiên">
+            <button type="button" class="seg-btn" data-priority="low">Thấp</button>
+            <button type="button" class="seg-btn seg-btn--active" data-priority="medium">Trung bình</button>
+            <button type="button" class="seg-btn" data-priority="high">Cao</button>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="field">
+            <label for="task-start-date">Ngày bắt đầu</label>
+            <input id="task-start-date" class="input" type="date" />
+          </div>
+          <div class="field">
+            <label for="task-start-time">Giờ bắt đầu</label>
+            <input id="task-start-time" class="input" type="time" />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="field">
+            <label for="task-due-date">Ngày kết thúc (hạn)</label>
+            <input id="task-due-date" class="input" type="date" />
+          </div>
+          <div class="field">
+            <label for="task-due-time">Giờ kết thúc</label>
+            <input id="task-due-time" class="input" type="time" />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="field">
+            <label for="task-status">Trạng thái</label>
+            <select id="task-status" class="select">
+              <option value="todo">Chưa thực hiện</option>
+              <option value="in_progress">Đang thực hiện</option>
+              <option value="completed">Hoàn thành</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="task-repeat">Lặp lại</label>
+            <select id="task-repeat" class="select">
+              <option value="none">Không lặp lại</option>
+              <option value="daily">Hằng ngày</option>
+              <option value="weekly">Hằng tuần</option>
+              <option value="monthly">Hằng tháng</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="task-category">Danh mục</label>
+          <select id="task-category" class="select">
+            <option value="">Không phân loại</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="task-desc">Mô tả chi tiết</label>
+          <textarea id="task-desc" class="textarea" placeholder="Ghi chú, đầu việc con hoặc thông tin liên quan..."></textarea>
+        </div>
+
+        <div class="modal__actions">
+          <button id="btn-delete-task-modal" type="button" class="btn btn--danger-outline" hidden>Xóa</button>
+          <button id="btn-save-task" type="submit" class="btn btn--primary btn--full">Lưu công việc</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: QUẢN LÝ DANH MỤC ==================== -->
+  <div id="modal-categories" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-cat-title" hidden>
+    <div class="modal__backdrop" data-close-modal="modal-categories"></div>
+    <div class="modal__panel">
+      <div class="modal__header">
+        <h3 id="modal-cat-title" class="modal__title">Quản lý danh mục</h3>
+        <button type="button" class="icon-btn" data-close-modal="modal-categories" aria-label="Đóng">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="category-form" class="form-stack">
+        <div class="field">
+          <label for="category-name-input">Tên danh mục mới</label>
+          <input id="category-name-input" class="input" type="text" placeholder="Ví dụ: Tài chính, Gia đình..." required maxlength="40" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label>Chọn màu nhận diện</label>
+          <div id="category-color-palette" class="color-palette" role="group" aria-label="Bảng màu danh mục"></div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full">Thêm danh mục</button>
+      </form>
+
+      <div id="categories-list" class="cat-manage-list"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: THÊM / SỬA THÓI QUEN ==================== -->
+  <div id="modal-habit" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-habit-title" hidden>
+    <div class="modal__backdrop" data-close-modal="modal-habit"></div>
+    <div class="modal__panel">
+      <div class="modal__header">
+        <h3 id="modal-habit-title" class="modal__title">Thêm thói quen mới</h3>
+        <button type="button" class="icon-btn" data-close-modal="modal-habit" aria-label="Đóng">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="habit-form" class="form-stack">
+        <div class="field">
+          <label for="habit-name-input">Tên thói quen *</label>
+          <input id="habit-name-input" class="input" type="text" placeholder="Ví dụ: Đọc sách 20 phút, Tập thể dục..." required maxlength="100" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="habit-desc-input">Mô tả / mục tiêu</label>
+          <textarea id="habit-desc-input" class="textarea" placeholder="Ghi rõ thời điểm hoặc mục tiêu cụ thể..."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="habit-freq-select">Tần suất mục tiêu</label>
+          <select id="habit-freq-select" class="select">
+            <option value="daily">Mỗi ngày</option>
+            <option value="weekdays">Thứ 2 – Thứ 6</option>
+            <option value="weekly">Hàng tuần</option>
+          </select>
+        </div>
+
+        <label class="check-row" for="habit-active-check">
+          <span>Đang theo dõi thói quen này</span>
+          <input id="habit-active-check" type="checkbox" class="switch" checked />
+        </label>
+
+        <div class="modal__actions">
+          <button id="btn-delete-habit-modal" type="button" class="btn btn--danger-outline" hidden>Xóa</button>
+          <button id="btn-save-habit" type="submit" class="btn btn--primary btn--full">Lưu thói quen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 4: LỊCH SỬ THÓI QUEN 30 NGÀY ==================== -->
+  <div id="modal-habit-history" class="modal" role="dialog" aria-modal="true" aria-labelledby="habit-history-title" hidden>
+    <div class="modal__backdrop" data-close-modal="modal-habit-history"></div>
+    <div class="modal__panel">
+      <div class="modal__header">
+        <h3 id="habit-history-title" class="modal__title">Lịch sử thói quen</h3>
+        <button type="button" class="icon-btn" data-close-modal="modal-habit-history" aria-label="Đóng">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="stats-grid-4">
+        <div class="stat-box">
+          <span id="habit-hist-streak" class="stat-box__num">0 ngày</span>
+          <span class="stat-box__label">Chuỗi hiện tại</span>
+        </div>
+        <div class="stat-box">
+          <span id="habit-hist-best" class="stat-box__num">0 ngày</span>
+          <span class="stat-box__label">Kỷ lục</span>
+        </div>
+        <div class="stat-box">
+          <span id="habit-hist-rate" class="stat-box__num">0%</span>
+          <span class="stat-box__label">Tỷ lệ duy trì</span>
+        </div>
+        <div class="stat-box">
+          <span id="habit-hist-total" class="stat-box__num">0 lần</span>
+          <span class="stat-box__label">Tổng đã làm</span>
+        </div>
+      </div>
+
+      <p class="section-head__meta" style="margin-top:14px;">30 ngày gần nhất (chạm vào ngày bất kỳ để cập nhật trạng thái):</p>
+      <div id="habit-history-grid" class="history-grid-30"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 5: TẠO / SỬA GHI CHÚ ==================== -->
+  <div id="modal-note" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-note-title" hidden>
+    <div class="modal__backdrop" data-close-modal="modal-note"></div>
+    <div class="modal__panel">
+      <div class="modal__header">
+        <h3 id="modal-note-title" class="modal__title">Tạo ghi chú mới</h3>
+        <button type="button" class="icon-btn" data-close-modal="modal-note" aria-label="Đóng">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="note-form" class="form-stack">
+        <div class="field">
+          <label for="note-title-input">Tiêu đề</label>
+          <input id="note-title-input" class="input" type="text" placeholder="Nhập tiêu đề ghi chú..." maxlength="140" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="note-content-input">Nội dung</label>
+          <textarea id="note-content-input" class="textarea" style="min-height:150px;" placeholder="Viết ý tưởng, danh sách cần nhớ..."></textarea>
+        </div>
+
+        <label class="check-row" for="note-pin-check">
+          <span>Ghim ghi chú quan trọng lên đầu</span>
+          <input id="note-pin-check" type="checkbox" class="switch" />
+        </label>
+
+        <p id="note-timestamps-meta" class="section-head__meta" hidden></p>
+
+        <div class="modal__actions">
+          <button id="btn-delete-note-modal" type="button" class="btn btn--danger-outline" hidden>Xóa</button>
+          <button id="btn-save-note" type="submit" class="btn btn--primary btn--full">Lưu ghi chú</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast thông báo -->
+  <div id="app-toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./assets/js/app.js"></script>
+</body>
+</html>

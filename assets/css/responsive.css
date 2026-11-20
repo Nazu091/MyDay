@@ -1,0 +1,124 @@
+/**
+ * responsive.css
+ * Chuyển đổi bố cục mượt mà giữa iPhone (Bottom Navigation + Bottom Sheet)
+ * và Máy tính / Tablet ngang (Sidebar Navigation + Centered Dialog).
+ */
+
+@media (max-width: 400px) {
+  .progress-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ring-wrap {
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-layout {
+    flex-direction: row;
+  }
+
+  .mobile-header,
+  .bottom-nav,
+  .fab {
+    display: none;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 16px;
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+  }
+
+  .sidebar__brand {
+    padding: 0 8px 18px;
+  }
+
+  .sidebar__brand h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .sidebar__brand p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .sidebar__cta {
+    margin-bottom: 18px;
+  }
+
+  .sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar .nav-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .sidebar .nav-item span {
+    font-size: 0.9rem;
+  }
+
+  .sidebar .nav-item:hover {
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+  }
+
+  .sidebar .nav-item--active {
+    background-color: var(--accent-blue-soft);
+    color: var(--accent-blue);
+  }
+
+  .sidebar__footer {
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .main-content {
+    padding: 32px 32px 48px;
+  }
+
+  .modal {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .modal__panel {
+    border-radius: 20px;
+    padding: 24px;
+    transform: scale(0.96);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .modal--open .modal__panel {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .toast {
+    bottom: 24px;
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "id": "./index.html",
+  "name": "MyDay – Quản lý công việc cá nhân",
+  "short_name": "MyDay",
+  "description": "Ứng dụng PWA quản lý công việc, lịch trình, thói quen và ghi chú cá nhân hoạt động Offline.",
+  "lang": "vi",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F9FAFB",
+  "theme_color": "#111827",
+  "categories": [
+    "productivity",
+    "lifestyle",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Thêm công việc mới",
+      "short_name": "Thêm việc",
+      "url": "./index.html?action=add",
+      "icons": [
+        {
+          "src": "./assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Theo dõi thói quen",
+      "short_name": "Thói quen",
+      "url": "./index.html?tab=habits",
+      "icons": [
+        {
+          "src": "./assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
